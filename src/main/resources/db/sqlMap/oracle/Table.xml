@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.code.dao.TableMapper">
+
+	<resultMap type="com.code.model.Table" id="OracleTableRes">
+		<result property="dbName" column="OWNER"/>
+		<result property="tableName" column="TABLE_NAME"/>
+		<result property="comments" column="COMMENTS"/>
+		<result property="createTime" column="LAST_ANALYZED"/>
+	</resultMap>
+	<select id="qryTablesFromAll" resultMap="OracleTableRes">
+		select  t.OWNER ,t.TABLE_NAME, tc.COMMENTS, t.LAST_ANALYZED
+		from all_tables t
+     		left join all_tab_comments tc on t.TABLE_NAME = tc.TABLE_NAME and t.OWNER = tc.OWNER
+     	<where>
+     		<if test="dbName != null and dbName != '' ">
+			t.OWNER = upper(#{dbName})
+			</if>
+			<if test="tableName != null and tableName != '' ">
+			and t.TABLE_NAME like concat('%', concat(UPPER(#{tableName}), '%'))
+			</if>
+     	</where>
+	</select>
+	
+	<select id="qryTablesFromUser" resultMap="OracleTableRes">
+		select t.TABLE_NAME, tc.COMMENTS, t.LAST_ANALYZED
+		from user_tables t
+     		left join user_tab_comments tc on t.TABLE_NAME = tc.TABLE_NAME 
+     	<where>
+			<if test="tableName != null and tableName != '' ">
+			t.TABLE_NAME like concat('%', concat(UPPER(#{tableName}), '%'))
+			</if>
+     	</where>
+	</select>
+	
+	<resultMap type="com.code.model.Column" id="OracleColumnRes">
+		<result property="columnId" column="COLUMN_ID"/>
+		<result property="columnName" column="COLUMN_NAME"/>
+		<result property="comments" column="COMMENTS"/>
+		<result property="charLength" column="DATA_LENGTH"/>
+		<result property="dataPrecision" column="DATA_PRECISION"/>
+		<result property="dataScale" column="DATA_SCALE"/>
+		<result property="columnType" column="COLUMN_TYPE"/>
+		<result property="dataType" column="DATA_TYPE"/>
+		<result property="nullable" column="NULLABLE"/>
+		<result property="defaultValue" column="DATA_DEFAULT"/>
+	</resultMap>
+	<select id="qryOneTableColumnFromAll" resultMap="OracleColumnRes">
+	select atc.COLUMN_ID, atc.COLUMN_NAME, atc.NULLABLE, acc.COMMENTS,
+		atc.DATA_TYPE, atc.DATA_LENGTH, atc.DATA_PRECISION, atc.DATA_SCALE,
+		atc.DATA_DEFAULT
+ 	from all_tab_columns atc 
+      left join all_col_comments acc on atc.TABLE_NAME = acc.TABLE_NAME and atc.COLUMN_NAME = acc.COLUMN_NAME
+ 	<where>
+ 		<if test="dbName != null and dbName != '' ">
+		atc.OWNER = upper(#{dbName})
+		</if>
+		<if test="tableName != null and tableName != '' ">
+		and atc.TABLE_NAME = upper(#{tableName})
+		</if>
+ 	</where>
+ 	order by COLUMN_ID
+	</select>
+	
+	<select id="qryOneTableColumnFromUser" resultMap="OracleColumnRes">
+	select atc.COLUMN_ID, atc.COLUMN_NAME, atc.NULLABLE, acc.COMMENTS,
+		atc.DATA_TYPE, atc.DATA_LENGTH, atc.DATA_PRECISION, atc.DATA_SCALE,
+		atc.DATA_DEFAULT
+ 	from user_tab_columns atc 
+      left join user_col_comments acc on atc.TABLE_NAME = acc.TABLE_NAME and atc.COLUMN_NAME = acc.COLUMN_NAME
+ 	<where>
+		<if test="tableName != null and tableName != '' ">
+		atc.TABLE_NAME = upper(#{tableName})
+		</if>
+ 	</where>
+ 	order by COLUMN_ID
+	</select>
+</mapper>

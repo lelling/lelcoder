@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.code.dao.TableMapper">
+	
+	<resultMap type="com.code.model.Table" id="TableRes">
+		<result property="dbName" column="TABLE_SCHEMA"/>
+		<result property="tableName" column="TABLE_NAME"/>
+		<result property="comments" column="TABLE_COMMENT"/>
+		<result property="createTime" column="CREATE_TIME"/>
+	</resultMap>
+	<select id="qryTablesFromAll" resultMap="TableRes">
+	SELECT t.TABLE_NAME, t.TABLE_COMMENT, TABLE_SCHEMA, CREATE_TIME
+	FROM INFORMATION_SCHEMA.TABLES t
+	<where>
+		<if test="dbName != null and dbName != '' ">
+			UPPER(t.TABLE_SCHEMA) = UPPER(#{dbName})
+		</if>
+		<if test="tableName != null and tableName != '' ">
+			and UPPER(t.TABLE_NAME) like CONCAT('%', UPPER(#{tableName}), '%')
+		</if>
+	</where>
+	</select>
+	
+	<resultMap type="com.code.model.Column" id="ColumnRes">
+		<result property="columnId" column="ORDINAL_POSITION"/>
+		<result property="columnName" column="COLUMN_NAME"/>
+		<result property="comments" column="COLUMN_COMMENT"/>
+		<result property="charLength" column="CHARACTER_MAXIMUM_LENGTH"/>
+		<result property="dataPrecision" column="NUMERIC_PRECISION"/>
+		<result property="dataScale" column="NUMERIC_SCALE"/>
+		<result property="columnType" column="COLUMN_TYPE"/>
+		<result property="dataType" column="DATA_TYPE"/>
+		<result property="nullable" column="IS_NULLABLE"/>
+		<result property="defaultValue" column="COLUMN_DEFAULT"/>
+	</resultMap>
+	<select id="qryOneTableColumnFromAll" resultMap="ColumnRes">
+	SELECT t.CHARACTER_MAXIMUM_LENGTH, t.NUMERIC_PRECISION, 
+		t.NUMERIC_SCALE, t.COLUMN_TYPE,
+		t.DATA_TYPE, t.COLUMN_NAME,
+		t.ORDINAL_POSITION, t.IS_NULLABLE,
+		t.COLUMN_DEFAULT, t.COLUMN_COMMENT
+	FROM
+ 	INFORMATION_SCHEMA.COLUMNS t
+ 	<where>
+		<if test="dbName != null and dbName != '' ">
+			UPPER(t.TABLE_SCHEMA) = UPPER(#{dbName})
+		</if>
+		<if test="tableName != null and tableName != '' ">
+			and UPPER(t.TABLE_NAME) = UPPER(#{tableName})
+		</if>
+	</where>
+	order by ORDINAL_POSITION
+	</select>
+</mapper>
